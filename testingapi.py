@@ -1,7 +1,7 @@
 from datetime import timedelta, date
-import json
 import csv
 import requests
+import pandas
 
 def daterange(start_date, end_date):
     for n in range(int ((end_date - start_date).days)):
@@ -31,8 +31,25 @@ def setupAndIntial():
     f.close()
 
 
+def appendDayofweek():
+    reader = csv.reader(open('2018/2018.csv', 'rb'))
+    writer = csv.writer(open('2018/2018_final.csv', 'w'))
+    headers = reader.next()
+    headers.append("Day Of Week")
+    writer.writerow(headers)
+    for row in reader:
+        dt = row[0]
+        year, month, day = (int(x) for x in dt.split('-'))
+        answer = date(year, month, day).weekday()
+        row.append(answer)
+        writer.writerow(row)
+
+
+
+
 if __name__ == '__main__':
     setupAndIntial()
+    # appendDayofweek()
 
 
 
