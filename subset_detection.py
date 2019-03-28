@@ -24,6 +24,8 @@ def calc_null_parameters(hist):
     # p_0 = sum(observations) / (len(observations) * 30.0)
     p_0=np.mean(observations)
     std_0=np.std(hist)
+    print p_0
+    print std_0
     return p_0,std_0
 
 
@@ -42,6 +44,7 @@ def calc_likelihood_ratio(new, S,std_0, p_0, p_1):
         item1 = math.log(scipy.stats.norm(p_1,std_0).pdf(new[i]))
         item2 = math.log(scipy.stats.norm(p_0,std_0).pdf(new[i]))
         log_likelihood_ratio = log_likelihood_ratio + item1 - item2
+    print "LLR",log_likelihood_ratio
     return log_likelihood_ratio
 
 
@@ -70,9 +73,9 @@ def anomalous_subset_detection(hist, new_day, alpha):
     Step 1: Identify the best subset S*
     """
     [best_llr, best_subset, subset_stat] = day_process(new_day,std_0, p_0)
-    print 'new data'
+
     da = map(prettyfloat, [llr for llr, S in subset_stat])
-    print da
+
     print '+++++++++++++++++++++++++'
 
     hist_day_max_llrs = []
@@ -89,7 +92,7 @@ def anomalous_subset_detection(hist, new_day, alpha):
         print da
 
     da = map(prettyfloat, hist_day_max_llrs)
-    print 'LLRs'
+    # print 'LLRs'
     print da
 
     empirical_p_value = len([item for item in hist_day_max_llrs if item > best_llr]) / (1.0 * len(hist_day_max_llrs))
@@ -107,7 +110,7 @@ def anomalous_point_detection(hist, new_day, alpha):
     # Calculate the p-value of individual observations in new_day
     p_values = []
     for idx, observation in enumerate(new_day):
-        p_value = 1 - scipy.stats.binom(30, p_0).cdf(observation)
+        p_value = 1 - scipy.stats.norm(30, p_0).cdf(observation)
         #        print idx+1, observation, p_value
         p_values.append([idx + 1, p_value])
 
@@ -116,18 +119,14 @@ def anomalous_point_detection(hist, new_day, alpha):
 
 
 def main():
-    hist = [[43,37,40,39,43,42,34,37,37,37,42,41],
-        [42,38,38,37,39,39,46,42,39,37,42,41],
-        [41,48,39,43,45,39,41,41,38,43,40,38],
-        [36,38,35,37,38,45,43,42,41,34,41,41],
-        [39,43,41,39,40,39,48,42,44,39,34,41],
-        [37,38,40,34,43,47,40,33,37,44,40,37],
-        [37,41,41,46,43,36,41,36,45,40,38,42],
-        [41,39,43,43,41,43,40,38,42,33,41,37],
-        [38,37,37,43,36,39,38,40,41,41,37,34],
-        [42,42,39,37,40,36,38,41,45,44,44,37]]
-
-    new_day = [27,31,41,39,29,26,26,40,37,36,36,40]
+    hist = [[68.05680264516128, 66.93892817857143, 65.8490321935484, 64.5239897, 64.41869383870967, 64.43204623333334, 64.42004025806452, 63.976866774193546, 64.40885999999999, 65.05859754838711, 64.83987113333335, 64.21648770967741],
+            [67.27909483870967, 68.25780341379311, 66.90909751612902, 66.46393513333334, 66.94090425806453, 67.2566731, 67.14910122580645, 66.93645848387096, 66.73580016666666, 66.73161819354839, 67.70613713333331, 67.79911293548386]]
+    # 2018 data
+    new_day = [63.61552119354839, 64.44885832142856, 65.04169216129033, 65.68700323333333, 67.50892812903224, 67.75483848387097, 68.6614654516129, 69.57460880645161, 72.23412933333334, 73.73052035483872, 72.15457015999999]
+    #2017 data
+    # new_day = [68.05680264516128, 66.93892817857143, 65.8490321935484, 64.5239897, 64.41869383870967, 64.43204623333334,
+    #            64.42004025806452, 63.976866774193546, 64.40885999999999, 65.05859754838711, 64.83987113333335,
+    #            64.21648770967741]
     alpha = 0.05  # confidence interval
     empirical_p_value, best_subset = anomalous_subset_detection(hist, new_day, alpha)
 
@@ -157,9 +156,3 @@ if __name__ == '__main__':
 
     pass
 
-# sum_measurements = 0
-# for day in range(10):
-#    sum_measurements += sum(hist[day])
-# mu = sum_measurements / (10.0 * count)
-
-# print hist
